@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_activity_type_discount_approval" model="mail.activity.type">
+            <field name="name">Validation de remise</field>
+            <field name="summary">Remise à valider</field>
+            <field name="icon">fa-percent</field>
+            <field name="res_model">sale.order</field>
+        </record>
+    </data>
+</odoo>

@@ -3,6 +3,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.tools import float_compare
 
 DISCOUNT_APPROVER_GROUP = 'sale_discount_approval.group_discount_approver'
+DISCOUNT_APPROVAL_ACTIVITY = 'sale_discount_approval.mail_activity_type_discount_approval'
 
 
 class SaleOrder(models.Model):
@@ -99,7 +100,22 @@ class SaleOrder(models.Model):
             if not order.discount_approval_needed:
                 raise UserError(_("Le devis %s n'a pas besoin de validation.", order.name))
         self.discount_approval_state = 'pending'
+        self._schedule_discount_approval_activities()
         return True
+
+    def _schedule_discount_approval_activities(self):
+        # Une activité « Validation de remise » pour chaque valideur de la société du devis.
+        approvers = self.env.ref(DISCOUNT_APPROVER_GROUP).sudo().all_user_ids.filtered(
+            lambda user: user.active and not user.share and not user._is_superuser())
+        for order in self:
+            for user in approvers.filtered(lambda u: order.company_id in u.company_ids):
+                order.activity_schedule(
+                    DISCOUNT_APPROVAL_ACTIVITY,
+                    user_id=user.id,
+                    note=_("Remise effective de %(rate)s %% (seuil : %(threshold)s %%).",
+                           rate=f"{order.discount_rate:.2f}",
+                           threshold=f"{order.company_id.sale_discount_approval_threshold:.2f}"),
+                )
 
     def action_approve_discount(self):
         self._check_discount_approver()
@@ -110,15 +126,35 @@ class SaleOrder(models.Model):
                 'discount_approval_state': 'approved',
                 'discount_approved_rate': order.discount_rate,
             })
+        self.activity_unlink([DISCOUNT_APPROVAL_ACTIVITY])
         return True
 
     def action_refuse_discount(self):
+        # Ouvre l'assistant qui demande le motif du refus.
+        self._check_discount_approver()
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Refuser la remise"),
+            'res_model': 'sale.discount.refuse.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_order_id': self.id},
+        }
+
+    def _refuse_discount(self, reason):
         self._check_discount_approver()
         for order in self:
             if order.discount_approval_state != 'pending':
                 raise UserError(_("Le devis %s n'a pas de demande de validation en attente.", order.name))
-        self.discount_approval_state = 'refused'
-        return True
+            order.discount_approval_state = 'refused'
+            # Note interne qui notifie le commercial du devis.
+            order.message_post(
+                body=_("Remise refusée : %s", reason),
+                partner_ids=order.user_id.partner_id.ids,
+                subtype_xmlid='mail.mt_note',
+            )
+        self.activity_unlink([DISCOUNT_APPROVAL_ACTIVITY])
 
     def _confirmation_error_message(self):
         # Point d'extension prévu par Odoo : action_confirm() l'appelle pour chaque
@@ -144,4 +180,7 @@ class SaleOrder(models.Model):
                     'discount_approval_state': 'approved',
                     'discount_approved_rate': order.discount_rate,
                 })
-        return super().action_confirm()
+        res = super().action_confirm()
+        # Le devis est confirmé : les demandes de validation encore ouvertes n'ont plus d'objet.
+        self.activity_unlink([DISCOUNT_APPROVAL_ACTIVITY])
+        return res

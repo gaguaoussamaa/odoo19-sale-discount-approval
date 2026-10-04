@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_discount_refuse_wizard_approver,sale.discount.refuse.wizard.approver,model_sale_discount_refuse_wizard,group_discount_approver,1,1,1,1

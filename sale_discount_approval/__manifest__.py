@@ -9,8 +9,11 @@
     'depends': ['sale'],
     'data': [
         'security/sale_discount_approval_security.xml',
+        'security/ir.model.access.csv',
+        'data/mail_activity_type_data.xml',
         'views/res_config_settings_views.xml',
         'views/sale_order_views.xml',
+        'wizard/sale_discount_refuse_wizard_views.xml',
     ],
     'installable': True,
 }

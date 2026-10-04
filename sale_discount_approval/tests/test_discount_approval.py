@@ -80,3 +80,22 @@ class TestSaleDiscountApproval(TransactionCase):
         }).action_apply_discount()
         self.assertAlmostEqual(order.discount_rate, 15.0)
         self.assertTrue(order.discount_approval_needed)
+
+    def test_request_creates_activity_for_approvers(self):
+        order = self._create_quote(discount=20.0)
+        order.action_request_discount_approval()
+        activity = order.activity_ids.filtered(lambda a: a.user_id == self.approver)
+        self.assertEqual(
+            activity.activity_type_id,
+            self.env.ref('sale_discount_approval.mail_activity_type_discount_approval'))
+
+    def test_refuse_with_reason(self):
+        order = self._create_quote(discount=20.0)
+        order.action_request_discount_approval()
+        self.env['sale.discount.refuse.wizard'].with_user(self.approver).create({
+            'order_id': order.id,
+            'reason': "Marge insuffisante",
+        }).action_refuse()
+        self.assertEqual(order.discount_approval_state, 'refused')
+        self.assertFalse(order.activity_ids)
+        self.assertTrue(any("Marge insuffisante" in message.body for message in order.message_ids))
