@@ -82,9 +82,16 @@ class SaleOrder(models.Model):
         )
         return not covered
 
+    def _is_discount_approver(self):
+        # OdooBot (le superutilisateur technique) est responsable des ventes, donc
+        # « valideur » : il ne doit pas valider à la place d'un humain, par exemple
+        # quand une tâche planifiée confirme un devis payé en ligne.
+        user = self.env.user
+        return not user._is_superuser() and user.has_group(DISCOUNT_APPROVER_GROUP)
+
     def _check_discount_approver(self):
         # Le vrai contrôle : l'attribut groups de la vue ne fait que masquer le bouton.
-        if not self.env.user.has_group(DISCOUNT_APPROVER_GROUP):
+        if not self._is_discount_approver():
             raise AccessError(_("Seul un valideur de remises peut valider ou refuser une remise."))
 
     def action_request_discount_approval(self):
@@ -112,3 +119,29 @@ class SaleOrder(models.Model):
                 raise UserError(_("Le devis %s n'a pas de demande de validation en attente.", order.name))
         self.discount_approval_state = 'refused'
         return True
+
+    def _confirmation_error_message(self):
+        # Point d'extension prévu par Odoo : action_confirm() l'appelle pour chaque
+        # devis, quel que soit le chemin (bouton, signature en ligne, paiement en ligne).
+        error = super()._confirmation_error_message()
+        if error:
+            return error
+        if self.discount_approval_needed and not self._is_discount_approver():
+            return _(
+                "La remise effective de ce devis (%(rate)s %%) dépasse le seuil de "
+                "%(threshold)s %% : il doit être validé par un responsable avant confirmation.",
+                rate=f"{self.discount_rate:.2f}",
+                threshold=f"{self.company_id.sale_discount_approval_threshold:.2f}",
+            )
+        return False
+
+    def action_confirm(self):
+        # Un valideur qui confirme lui-même un devis au-delà du seuil : on enregistre
+        # sa validation, pour que tout devis confirmé au-delà du seuil en garde la trace.
+        if self._is_discount_approver():
+            for order in self.filtered('discount_approval_needed'):
+                order.write({
+                    'discount_approval_state': 'approved',
+                    'discount_approved_rate': order.discount_rate,
+                })
+        return super().action_confirm()
