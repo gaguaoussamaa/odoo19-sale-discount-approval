@@ -5,8 +5,30 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//header/button[@id='action_confirm']" position="before">
+                <button name="action_request_discount_approval" type="object"
+                        string="Demander la validation" class="btn-primary"
+                        invisible="not discount_approval_needed or discount_approval_state == 'pending'"/>
+                <button name="action_approve_discount" type="object"
+                        string="Valider la remise" class="btn-primary"
+                        groups="sale_discount_approval.group_discount_approver"
+                        invisible="discount_approval_state != 'pending'"/>
+                <button name="action_refuse_discount" type="object"
+                        string="Refuser la remise"
+                        groups="sale_discount_approval.group_discount_approver"
+                        invisible="discount_approval_state != 'pending'"/>
+            </xpath>
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-warning" role="alert" invisible="not discount_approval_needed">
+                    La remise effective dépasse le seuil de la société :
+                    ce devis doit être validé par un responsable avant confirmation.
+                </div>
+            </xpath>
             <xpath expr="//group[@name='order_details']" position="inside">
+                <field name="discount_approval_needed" invisible="1"/>
                 <field name="discount_rate" invisible="not discount_rate"/>
+                <field name="discount_approval_state" invisible="not discount_approval_state"/>
+                <field name="discount_approved_rate" invisible="discount_approval_state != 'approved'"/>
             </xpath>
         </field>
     </record>
