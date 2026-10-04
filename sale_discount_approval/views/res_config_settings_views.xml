@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sale.discount.approval</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='discount_sale_order_lines']" position="after">
+                <setting id="discount_approval_threshold">
+                    <div>
+                        <label for="sale_discount_approval_threshold"/>
+                        <field name="sale_discount_approval_threshold" class="text-center" style="width: 4rem;"/>
+                        <div class="d-inline-block">%</div>
+                    </div>
+                    <div class="text-muted">
+                        Au-delà de cette remise effective, un devis doit être validé par un responsable avant confirmation.
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
