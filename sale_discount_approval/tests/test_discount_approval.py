@@ -17,7 +17,7 @@ class TestSaleDiscountApproval(TransactionCase):
             cls.env, login='valideur_remise',
             groups='sales_team.group_sale_salesman,sale_discount_approval.group_discount_approver')
         cls.partner = cls.env['res.partner'].create({'name': "Client test"})
-        cls.product = cls.env['product.product'].create({'name': "Station test", 'list_price': 1000.0})
+        cls.product = cls.env['product.product'].create({'name': "Produit test", 'list_price': 1000.0})
 
     def _create_quote(self, discount):
         """Un devis d'une ligne à 1 000 €, créé par le commercial."""

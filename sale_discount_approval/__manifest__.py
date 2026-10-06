@@ -4,7 +4,8 @@
     'summary': "Un devis dont la remise dépasse un seuil doit être validé "
                "par un responsable avant confirmation",
     'category': 'Sales/Sales',
-    'author': "Oussama Gagua (module d'entraînement)",
+    'author': "Oussama Gagua",
+    'website': "https://github.com/gaguaoussamaa/odoo19-sale-discount-approval",
     'license': 'LGPL-3',
     'depends': ['sale'],
     'data': [
