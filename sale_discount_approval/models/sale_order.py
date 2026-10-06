@@ -1,6 +1,7 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
 from odoo.tools import float_compare
+from odoo.tools.misc import formatLang
 
 DISCOUNT_APPROVER_GROUP = 'sale_discount_approval.group_discount_approver'
 DISCOUNT_APPROVAL_ACTIVITY = 'sale_discount_approval.mail_activity_type_discount_approval'
@@ -113,8 +114,8 @@ class SaleOrder(models.Model):
                     DISCOUNT_APPROVAL_ACTIVITY,
                     user_id=user.id,
                     note=_("Remise effective de %(rate)s %% (seuil : %(threshold)s %%).",
-                           rate=f"{order.discount_rate:.2f}",
-                           threshold=f"{order.company_id.sale_discount_approval_threshold:.2f}"),
+                           rate=formatLang(self.env, order.discount_rate),
+                           threshold=formatLang(self.env, order.company_id.sale_discount_approval_threshold)),
                 )
 
     def action_approve_discount(self):
@@ -166,8 +167,8 @@ class SaleOrder(models.Model):
             return _(
                 "La remise effective de ce devis (%(rate)s %%) dépasse le seuil de "
                 "%(threshold)s %% : il doit être validé par un responsable avant confirmation.",
-                rate=f"{self.discount_rate:.2f}",
-                threshold=f"{self.company_id.sale_discount_approval_threshold:.2f}",
+                rate=formatLang(self.env, self.discount_rate),
+                threshold=formatLang(self.env, self.company_id.sale_discount_approval_threshold),
             )
         return False
 
