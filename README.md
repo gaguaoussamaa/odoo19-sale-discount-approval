@@ -1,8 +1,10 @@
 # Validation des remises sur devis — module Odoo 19
 
+[![Tests](https://github.com/gaguaoussamaa/odoo19-sale-discount-approval/actions/workflows/tests.yml/badge.svg)](https://github.com/gaguaoussamaa/odoo19-sale-discount-approval/actions/workflows/tests.yml)
+
 Module pour Odoo 19 Community. Un devis dont la **remise effective** dépasse un seuil doit être **validé par un responsable** avant d'être confirmé.
 
-> **Contexte.** C'est un module d'entraînement, écrit en octobre 2026 pour me remettre au développement natif sur Odoo 19 en vue d'un entretien pour un poste de consultant technique Odoo. J'y ai travaillé l'héritage du standard, la sécurité, un workflow de validation et les tests. Ce module ne vient pas d'un projet client et n'a pas été utilisé en production. J'ai travaillé avec Claude Code comme assistant. Les choix sont expliqués ci-dessous, et les tests couvrent les cas principaux.
+> **Contexte.** Module d'entraînement, écrit en octobre 2026. Pendant mon alternance, j'ai paramétré Odoo et développé ses échanges avec d'autres applications par son API ; ce module m'a servi à pratiquer le développement natif sur Odoo 19 : héritage du standard, sécurité, workflow de validation et tests. Il ne vient pas d'un projet client et n'a pas été utilisé en production.
 
 ![Un commercial dépasse le seuil : bandeau d'alerte et bouton « Demander la validation »](docs/01-commercial-validation-requise.png)
 
@@ -96,8 +98,10 @@ Les huit tests sont des `TransactionCase`. Ils utilisent des utilisateurs de tes
 - la demande crée une activité pour les valideurs ;
 - le refus enregistre le motif et ferme les activités.
 
+Ils tournent à chaque push avec GitHub Actions, sur Odoo 19 et PostgreSQL 16, avec le même `docker-compose.yml` que pour l'essai en local.
+
 ## Installation avec Docker
-Il faut seulement Docker.
+Seul Docker est nécessaire.
 
 ```bash
 git clone https://github.com/gaguaoussamaa/odoo19-sale-discount-approval.git
@@ -117,8 +121,8 @@ docker compose run --rm odoo odoo -d demo -u sale_discount_approval --test-tags 
 ```
 
 Pour essayer :
-1. Connecte-toi avec `demo` / `demo`, le commercial de la démo, et crée un devis avec une remise de 20 % sur une ligne.
-2. Connecte-toi avec `admin` / `admin` pour valider ou refuser la remise.
+1. Se connecter avec `demo` / `demo`, le commercial de la démo, et créer un devis avec une remise de 20 % sur une ligne.
+2. Se connecter avec `admin` / `admin` pour valider ou refuser la remise.
 
 Pour passer l'interface en français : Préférences › Langue.
 
