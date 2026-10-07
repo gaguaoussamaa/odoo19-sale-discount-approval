@@ -1,0 +1,25 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  odoo:
+    name: Odoo 19 / PostgreSQL 16
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Base de données
+        run: |
+          docker compose up -d db
+          until docker compose exec -T db pg_isready -U odoo; do sleep 2; done
+
+      - name: Installation du module et tests
+        run: |
+          set -o pipefail
+          docker compose run --rm -T odoo odoo -d test -i sale_discount_approval \
+            --test-tags /sale_discount_approval --stop-after-init 2>&1 | tee odoo.log
+          # Vérifie que les tests ont réellement tourné, et sans échec
+          grep -E "(^|[^0-9])0 failed, 0 error\(s\) of [1-9][0-9]* tests" odoo.log
