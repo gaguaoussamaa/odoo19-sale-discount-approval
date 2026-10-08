@@ -4,7 +4,7 @@
 
 Module pour Odoo 19 Community. Un devis dont la **remise effective** dépasse un seuil doit être **validé par un responsable** avant d'être confirmé.
 
-> **Contexte.** Module d'entraînement, écrit en octobre 2026. Pendant mon alternance, j'ai paramétré Odoo et développé ses échanges avec d'autres applications par son API ; ce module m'a servi à pratiquer le développement natif sur Odoo 19 : héritage du standard, sécurité, workflow de validation et tests. Il ne vient pas d'un projet client et n'a pas été utilisé en production.
+> Module d'entraînement sur Odoo 19 Community (octobre 2026) : héritage du standard, sécurité, workflow de validation et tests. Il ne vient pas d'un projet client et n'a pas été utilisé en production.
 
 ![Un commercial dépasse le seuil : bandeau d'alerte et bouton « Demander la validation »](docs/01-commercial-validation-requise.png)
 
